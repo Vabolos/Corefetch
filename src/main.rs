@@ -1,4 +1,4 @@
-use std::{fs, path::Path};
+use std::{env, fs, path::Path};
 use toml;
 use serde::{Deserialize, Serialize};
 use colored::*;
@@ -30,24 +30,29 @@ impl Default for Config {
     }
 }
 
-const CONFIG_PATH: &str = "C:/Users/<USERNAME>/.config/CoreFetch/config.toml";
+fn config_path() -> String {
+    let username = env::var("USERNAME").unwrap();
+    format!("C:/Users/{}/.config/Corefetch/config.toml", username)
+}
 
 fn generate_config() {
     let default_config = Config::default();
     let toml_string = toml::to_string_pretty(&default_config).unwrap();
-    let path = Path::new(CONFIG_PATH);
+    let path = Path::new(&config_path());
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).unwrap();
     }
-    fs::write(CONFIG_PATH, toml_string).unwrap();
-    println!("{}", "Config file generated at".green());
+    fs::write(&config_path(), toml_string).unwrap();
+    println!("{}", "Config file generated at C:/Users/<USERNAME>/.config/Corefetch/config.toml".green());
 }
 
 fn load_config() -> Config {
-    if Path::new(CONFIG_PATH).exists() {
-        let content = fs::read_to_string(CONFIG_PATH).unwrap();
+    let path = Path::new(&config_path());
+    if path.exists() {
+        let content = fs::read_to_string(path).unwrap();
         toml::from_str(&content).unwrap()
     } else {
+        generate_config();
         Config::default()
     }
 }
