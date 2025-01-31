@@ -40,6 +40,7 @@ To use CoreFetch, simply run `corefetch` in your terminal. CoreFetch will automa
 ### Configuration ⚙️
 
 _This part is still a WIP!_
+
 You can customize CoreFetch by modifying the `config.toml` file located at `~/.config/CoreFetch/config.toml`. Here is an example configuration:
 
 ```toml
