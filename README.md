@@ -43,6 +43,7 @@ To use CoreFetch, simply run `corefetch` in your terminal. CoreFetch will automa
 ### Configuration ⚙️
 
 _This part is still a WIP!_
+
 You can customize CoreFetch by modifying the `config.toml` file located at `~/.config/CoreFetch/config.toml`. Here is an example configuration:
 
 ```toml
@@ -82,6 +83,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Enjoy using CoreFetch and have fun customizing your system information display! 🎉
 
-```
-
-```
