@@ -2,6 +2,7 @@ use std::{fs, path::Path};
 use toml;
 use serde::{Deserialize, Serialize};
 use colored::*;
+use dirs; // Import the dirs crate
 
 #[derive(Serialize, Deserialize)]
 struct Config {
@@ -30,22 +31,25 @@ impl Default for Config {
     }
 }
 
-const CONFIG_PATH: &str = "C:/Users/<USERNAME>/.config/CoreFetch/config.toml";
+fn get_config_path() -> String {
+    let home_dir = dirs::home_dir().unwrap();
+    format!("{}/.config/CoreFetch/config.toml", home_dir.to_str().unwrap())
+}
 
-fn generate_config() {
+fn generate_config(config_path: &str) {
     let default_config = Config::default();
     let toml_string = toml::to_string_pretty(&default_config).unwrap();
-    let path = Path::new(CONFIG_PATH);
+    let path = Path::new(config_path);
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).unwrap();
     }
-    fs::write(CONFIG_PATH, toml_string).unwrap();
-    println!("{}", "Config file generated at".green());
+    fs::write(config_path, toml_string).unwrap();
+    println!("{} {}", "Config file generated at:".yellow().bold(), config_path);
 }
 
-fn load_config() -> Config {
-    if Path::new(CONFIG_PATH).exists() {
-        let content = fs::read_to_string(CONFIG_PATH).unwrap();
+fn load_config(config_path: &str) -> Config {
+    if Path::new(config_path).exists() {
+        let content = fs::read_to_string(config_path).unwrap();
         toml::from_str(&content).unwrap()
     } else {
         Config::default()
@@ -53,7 +57,11 @@ fn load_config() -> Config {
 }
 
 fn main() {
-    let config = load_config();
+    let config_path = get_config_path();
+    if !Path::new(&config_path).exists() {
+        generate_config(&config_path);
+    }
+    let config = load_config(&config_path);
     println!("{}", "\n   ______                ______     __       __  ".truecolor(245, 224, 220).bold());
     println!("{}", "  / ____/___  ________  / ____/__  / /______/ /_ ".truecolor(242, 205, 205).bold());
     println!("{}", " / /   / __ \\/ ___/ _ \\/ /_  / _ \\/ __/ ___/ __ \\".truecolor(245, 194, 231).bold());
