@@ -1,6 +1,6 @@
 # CoreFetch 🚀
 
-![CoreFetch](https://img.shields.io/badge/CoreFetch-v1.0-blue)
+![CoreFetch](https://img.shields.io/badge/CoreFetch-v1.2-blue)
 
 CoreFetch is a fun and customizable CLI tool to fetch and display system information in a visually appealing way. Powered by Rust, CoreFetch allows you to see details about your CPU, RAM, OS, battery, disk, and network in an attractive ASCII art format. 🎨
 
