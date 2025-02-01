@@ -2,7 +2,10 @@ use std::{fs, path::Path};
 use toml;
 use serde::{Deserialize, Serialize};
 use colored::*;
-use dirs; // Import the dirs crate
+use dirs;
+use std::fs::File;
+use std::io::Write;
+use sysinfo::{Components, Disks, Networks, System, SystemExt, ProcessorExt, DiskExt, NetworkExt}; // Import sysinfo crate
 
 #[derive(Serialize, Deserialize)]
 struct Config {
@@ -47,6 +50,27 @@ fn generate_config(config_path: &str) {
     println!("{} {}", "Config file generated at:".yellow().bold(), config_path);
 }
 
+fn write_config_to_file() {
+    // Create an instance of the configuration
+    let config = Config {
+        alignment: "left".to_string(),
+        spacing: 2,
+        show_cpu: true,
+        show_ram: true,
+        show_os: true,
+        show_battery: false,
+        show_disk: true,
+        show_network: true,
+    };
+
+    // Serialize the configuration to TOML format
+    let toml_string = toml::to_string(&config).expect("Failed to serialize config");
+
+    // Write the TOML string to the config.toml file
+    let mut file = File::create("config.toml").expect("Failed to create config.toml");
+    file.write_all(toml_string.as_bytes()).expect("Failed to write to config.toml");
+}
+
 fn load_config(config_path: &str) -> Config {
     if Path::new(config_path).exists() {
         let content = fs::read_to_string(config_path).unwrap();
@@ -56,10 +80,67 @@ fn load_config(config_path: &str) -> Config {
     }
 }
 
+fn display_system_info(config: &Config) {
+    let mut system = System::new_all();
+    system.refresh_all();
+
+    if config.show_cpu {
+        let cpu_usage = system.global_processor_info().cpu_usage();
+        println!("CPU Usage: {:.2}%", cpu_usage);
+    }
+
+    if config.show_ram {
+        let total_memory = system.total_memory();
+        let used_memory = system.used_memory();
+        println!("Total Memory: {} bytes", total_memory);
+        println!("Used Memory : {} bytes", used_memory);
+    }
+
+    if config.show_os {
+        let os_name = system.name().unwrap_or_else(|| "Unknown".to_string());
+        let os_kernel_version = system.kernel_version().unwrap_or_else(|| "Unknown".to_string());
+        let os_version = system.os_version().unwrap_or_else(|| "Unknown".to_string());
+        let host_name = system.host_name().unwrap_or_else(|| "Unknown".to_string());
+
+        println!("System Name:             {}", os_name);
+        println!("System Kernel Version:   {}", os_kernel_version);
+        println!("System OS Version:       {}", os_version);
+        println!("System Host Name:        {}", host_name);
+    }
+
+    if config.show_battery {
+        // sysinfo does not support battery information directly, you may need another crate like `battery`
+        println!("Battery: Information not available");
+    }
+
+    if config.show_disk {
+        for disk in system.disks() {
+            println!(
+                "Disk: {} - Total: {} bytes, Available: {} bytes",
+                disk.name().to_string_lossy(),
+                disk.total_space(),
+                disk.available_space()
+            );
+        }
+    }
+
+    if config.show_network {
+        for (interface_name, data) in system.networks() {
+            println!(
+                "Network: {} - Received: {} bytes, Transmitted: {} bytes",
+                interface_name,
+                data.received(),
+                data.transmitted()
+            );
+        }
+    }
+}
+
 fn main() {
     let config_path = get_config_path();
     if !Path::new(&config_path).exists() {
         generate_config(&config_path);
+        write_config_to_file();
     }
     let config = load_config(&config_path);
     println!("{}", "\n   ______                ______     __       __  ".truecolor(245, 224, 220).bold());
@@ -70,5 +151,6 @@ fn main() {
     println!("{}", "\n".truecolor(235, 160, 172).bold());
     println!("Alignment: {}", config.alignment);
     println!("Spacing: {}", config.spacing);
-    // Fetch and display system info here
+
+    display_system_info(&config);
 }
