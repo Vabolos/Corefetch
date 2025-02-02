@@ -30,7 +30,7 @@ To install CoreFetch, you'll need to have Rust installed on your system. If you 
 
 3. Move the Executable to a System Path:
    ```sh
-   copy target\\release\\corefetch.exe C:\\Users\\YourUsername\\.cargo\\bin\\
+   copy target\release\corefetch.exe C:\Users\YourUsername\.cargo\bin\
    ```
 
 > [!WARNING]
